@@ -34,33 +34,21 @@ async def eor(message: Message, *args, **kwargs) -> Message:
 
 
 async def call_decorators():
-    @call.on_group_call_participant_left
-    async def participant_left_handler(client, chat_id: int, user_id: int):
-        # Handle when a participant leaves the group call
-        queue_empty = await queues.is_queue_empty(chat_id)
-        if not queue_empty:
-            await queues.clear_queue(chat_id)
-        try:
-            return await call.leave_group_call(chat_id)
-        except:
-            return
-
-
     @call.on_stream_end
     async def stream_end_handler(client, update: Update):
-        if not isinstance(update, StreamAudioEnded):
-            return
-        chat_id = update.chat_id
-        await queues.task_done(chat_id)
-        queue_empty = await queues.is_queue_empty(chat_id)
-        if queue_empty:
-            try:
-                return await call.leave_group_call(chat_id)
-            except:
-                return
-        check = await queues.get_from_queue(chat_id)
-        media = check["media"]
-        type = check["type"]
-        stream = await get_media_stream(media, type)
-        await call.change_stream(chat_id, stream)
-        return await app.send_message(chat_id, "Streaming ...")
+        if isinstance(update, StreamAudioEnded):
+            chat_id = update.chat_id
+            await queues.task_done(chat_id)
+            queue_empty = await queues.is_queue_empty(chat_id)
+            if queue_empty:
+                try:
+                    await call.leave_group_call(chat_id)
+                except Exception as e:
+                    print(f"Error leaving group call: {e}")
+            else:
+                check = await queues.get_from_queue(chat_id)
+                media = check["media"]
+                type = check["type"]
+                stream = await get_media_stream(media, type)
+                await call.change_stream(chat_id, stream)
+                await app.send_message(chat_id, "Streaming ...")
