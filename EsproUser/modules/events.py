@@ -34,10 +34,9 @@ async def eor(message: Message, *args, **kwargs) -> Message:
 
 
 async def call_decorators():
-    @call.on_kicked()
-    @call.on_closed_voice_chat()
-    @call.on_left()
-    async def stream_services_handler(client, chat_id: int):
+    @call.on_group_call_participant_left
+    async def participant_left_handler(client, chat_id: int, user_id: int):
+        # Handle when a participant leaves the group call
         queue_empty = await queues.is_queue_empty(chat_id)
         if not queue_empty:
             await queues.clear_queue(chat_id)
@@ -47,8 +46,8 @@ async def call_decorators():
             return
 
 
-    @call.on_stream_end()
-    async def stream_end_handler_(client, update: Update):
+    @call.on_stream_end
+    async def stream_end_handler(client, update: Update):
         if not isinstance(update, StreamAudioEnded):
             return
         chat_id = update.chat_id
@@ -64,4 +63,4 @@ async def call_decorators():
         type = check["type"]
         stream = await get_media_stream(media, type)
         await call.change_stream(chat_id, stream)
-        return await app.send_message("Streaming ...")
+        return await app.send_message(chat_id, "Streaming ...")
