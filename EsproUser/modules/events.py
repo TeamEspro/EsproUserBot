@@ -34,8 +34,8 @@ async def eor(message: Message, *args, **kwargs) -> Message:
 
 
 async def call_decorators():
-    @call.on_stream_end
-    async def stream_end_handler(client, update: Update):
+    @call.on_update
+    async def update_handler(client, update: Update):
         if isinstance(update, StreamAudioEnded):
             chat_id = update.chat_id
             await queues.task_done(chat_id)
