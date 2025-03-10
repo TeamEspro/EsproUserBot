@@ -1,13 +1,13 @@
 {
-    "name": "Crowgram",
-    "description": "Crowgram is a powerful, advanced, multi-featured Telegram userbot.",
+    "name": "EsproUser",
+    "description": "EsproUser is a powerful, advanced, multi-featured Telegram userbot.",
     "logo": "https://telegra.ph/file/95ea921aa5b01e3b9c91e.png",
     "keywords": [
       "userbot",
       "plugins",
       "modules",
       "music",
-      "crowgram"
+      "EsproUser"
     ],
     "repository": "https://github.com/TeamEspro/EsproUserBot",
     "env": {

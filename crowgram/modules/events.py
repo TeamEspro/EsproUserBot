@@ -1,7 +1,7 @@
-from crowgram import config
-from crowgram.modules import queues
-from crowgram.modules.clients import app, call
-from crowgram.modules.streams import get_media_stream
+from EsproUser import config
+from EsproUser.modules import queues
+from EsproUser.modules.clients import app, call
+from EsproUser.modules.streams import get_media_stream
 from pyrogram import filters
 from pyrogram.types import Message
 from pytgcalls.types import Update

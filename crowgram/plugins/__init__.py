@@ -22,7 +22,7 @@ __all__ = ALL_PLUGINS + ["ALL_PLUGINS"]
 async def load_plugins():
     for all_plugin in ALL_PLUGINS:
         imported_plugin = importlib.import_module(
-            "crowgram.plugins." + all_plugin
+            "EsproUser.plugins." + all_plugin
         )
         print(f"Imported: {all_plugin}")
 

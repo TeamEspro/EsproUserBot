@@ -1,4 +1,4 @@
-from crowgram import config
+from EsproUser import config
 from pyrogram import Client
 from pytgcalls import PyTgCalls
 

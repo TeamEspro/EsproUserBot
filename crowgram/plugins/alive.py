@@ -1,4 +1,4 @@
-from crowgram import app, cdx, eor
+from EsproUser import app, cdx, eor
 
 
 @app.on_message(cdx(["alive"]))

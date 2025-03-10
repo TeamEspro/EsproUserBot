@@ -1,8 +1,8 @@
 import asyncio, pyrogram
 
-from crowgram import app, bot, call
-from crowgram import call_decorators
-from crowgram.plugins import load_plugins
+from EsproUser import app, bot, call
+from EsproUser import call_decorators
+from EsproUser.plugins import load_plugins
 
 
 loop = asyncio.get_event_loop()
@@ -23,11 +23,11 @@ async def init():
         return print(
             f"Error: {e}"
         )
-    print("Crowgram Now Started !!")
+    print("EsproUser Now Started !!")
     await pyrogram.idle()
 
 
 if __name__ == "__main__":
     loop.run_until_complete(init())
-    print("Crowgram Now Stopped !!")
+    print("EsproUser Now Stopped !!")
 
