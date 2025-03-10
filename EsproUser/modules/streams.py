@@ -4,7 +4,6 @@ from EsproUser import config
 from pyrogram.types import Audio, Voice
 from pyrogram.types import Video, VideoNote
 from pytgcalls.types import *
-from pytgcalls.types import MediaStream
 from pytgcalls.types.raw import AudioParameters
 from pytgcalls.types.raw import VideoParameters
 from typing import Union
