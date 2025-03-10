@@ -5,12 +5,13 @@ from EsproUser.modules.streams import get_media_stream
 from pyrogram import filters
 from pyrogram.types import Message
 from pytgcalls.types import Update
-from pytgcalls.types.stream import StreamAudioEnded
+from pytgcalls.types.stream import StreamEnded  # Fixed Import
 from typing import Union, List
 
 
 def cdx(commands: Union[str, List[str]]):
     return filters.command(commands, config.COMMAND_PREFIXES)
+
 
 def cdz(commands: Union[str, List[str]]):
     return filters.command(commands, config.COMMAND_HANDLERS)
@@ -29,7 +30,7 @@ async def eor(message: Message, *args, **kwargs) -> Message:
             if bool(message.from_user and message.outgoing)
             else (message.reply_to_message or message).reply_text
         )
-    
+
     return await msg(*args, **kwargs)
 
 
@@ -46,10 +47,9 @@ async def call_decorators():
         except:
             return
 
-
     @call.on_stream_end()
     async def stream_end_handler_(client, update: Update):
-        if not isinstance(update, StreamAudioEnded):
+        if not isinstance(update, StreamEnded):  # Fixed StreamAudioEnded Issue
             return
         chat_id = update.chat_id
         await queues.task_done(chat_id)
@@ -64,5 +64,4 @@ async def call_decorators():
         type = check["type"]
         stream = await get_media_stream(media, type)
         await call.change_stream(chat_id, stream)
-        return await app.send_message("Streaming ...")
-
+        return await app.send_message(chat_id, "Streaming ...")  # Fixed send_message target
