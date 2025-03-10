@@ -1,9 +1,12 @@
 import re
-from EsproUser import app, call, cdz, eor
-from EsproUser.modules.queues import add_to_queue
-from EsproUser.modules.streams import download_media_file, get_media_info, get_media_stream
+
+from crowgram import app, call, cdz, eor
+from crowgram import add_to_queue
+from crowgram import download_media_file
+from crowgram import get_media_info, get_media_stream
 from pyrogram import filters
-from pytgcalls.exceptions import AlreadyJoinedError, GroupCallNotFound, NoActiveGroupCall, TelegramServerError
+from pytgcalls.exceptions import AlreadyJoinedError, GroupCallNotFound
+from pytgcalls.exceptions import NoActiveGroupCall, TelegramServerError
 
 
 @app.on_message(cdz(["ply", "play", "vply", "vplay"]) & ~filters.private)
@@ -15,10 +18,9 @@ async def start_stream(client, message):
     user_id = message.from_user.id
     mention = message.from_user.mention
     replied = message.reply_to_message
-    audiostream = (replied.audio or replied.voice) if replied else None
-    videostream = (replied.video or replied.document) if replied else None
+    audiostream = ((replied.audio or replied.voice) if replied else None)
+    videostream = ((replied.video or replied.document) if replied else None)
     command = str(message.command[0][0])
-
     if audiostream:
         media = await client.download_media(replied)
         type = "Audio"
@@ -39,9 +41,11 @@ async def start_stream(client, message):
             vidid = None
         results = await get_media_info(vidid, query)
         link = str(results[1])
-        type = "Video" if command == "v" else "Audio"
+        if command == "v":
+            type = "Video"
+        else:
+            type = "Audio"
         media = await download_media_file(link, type)
-
     try:
         a = await call.get_call(chat_id)
         if a.status == "not_playing":
@@ -49,7 +53,7 @@ async def start_stream(client, message):
             await call.change_stream(chat_id, stream)
             await add_to_queue(chat_id, media=media, type=type)
             return await aux.edit("**Streaming Started ....**")
-        elif a.status in ["playing", "paused"]:
+        elif (a.status == "playing" or a.status == "paused"):
             position = await add_to_queue(chat_id, media=media, type=type)
             return await aux.edit(f"**Added to Queue At {position}**")
     except GroupCallNotFound:
@@ -67,3 +71,5 @@ async def start_stream(client, message):
         except Exception as e:
             print(f"Error: {e}")
             return await aux.edit("**Please Try Again !**")
+        except:
+            return
