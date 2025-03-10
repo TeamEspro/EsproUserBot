@@ -12,7 +12,6 @@ from typing import Union, List
 def cdx(commands: Union[str, List[str]]):
     return filters.command(commands, config.COMMAND_PREFIXES)
 
-
 def cdz(commands: Union[str, List[str]]):
     return filters.command(commands, config.COMMAND_HANDLERS)
 
@@ -30,15 +29,15 @@ async def eor(message: Message, *args, **kwargs) -> Message:
             if bool(message.from_user and message.outgoing)
             else (message.reply_to_message or message).reply_text
         )
-
+    
     return await msg(*args, **kwargs)
 
 
 async def call_decorators():
-    @call.on_kicked()
-    @call.on_closed_voice_chat()
-    @call.on_left()
-    async def stream_services_handler(client, chat_id: int):
+    @call.on_network_changed()  # Fixed Decorator
+    @call.on_closed()  # Fixed Decorator
+    async def stream_services_handler(client, update: Update):
+        chat_id = update.chat_id
         queue_empty = await queues.is_queue_empty(chat_id)
         if not queue_empty:
             await queues.clear_queue(chat_id)
@@ -47,10 +46,8 @@ async def call_decorators():
         except:
             return
 
-    @call.on_stream_end()
-    async def stream_end_handler_(client, update: Update):
-        if not isinstance(update, StreamEnded):  # Fixed StreamAudioEnded Issue
-            return
+    @call.on_stream_ended()  # Fixed Function Name
+    async def stream_end_handler(client, update: Update):
         chat_id = update.chat_id
         await queues.task_done(chat_id)
         queue_empty = await queues.is_queue_empty(chat_id)
@@ -64,4 +61,4 @@ async def call_decorators():
         type = check["type"]
         stream = await get_media_stream(media, type)
         await call.change_stream(chat_id, stream)
-        return await app.send_message(chat_id, "Streaming ...")  # Fixed send_message target
+        return await app.send_message(chat_id, "Streaming ...")
