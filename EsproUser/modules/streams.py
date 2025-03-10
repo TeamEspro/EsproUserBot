@@ -3,7 +3,7 @@ import asyncio, re, yt_dlp
 from EsproUser import config
 from pyrogram.types import Audio, Voice
 from pyrogram.types import Video, VideoNote
-from pytgcalls.types import AudioQuality, VideoQuality
+from pytgcalls.types import *
 from pytgcalls.types import MediaStream
 from pytgcalls.types.raw import AudioParameters
 from pytgcalls.types.raw import VideoParameters
@@ -88,5 +88,5 @@ async def get_media_stream(media, type: str):
             video_parameters=VideoQuality.HD_720p,
         )
             
-    return stream
-            
+    return stream    
+print(dir())            
