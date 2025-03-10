@@ -9,7 +9,7 @@
       "music",
       "crowgram"
     ],
-    "repository": "https://github.com/AdityaHalder/Crowgram",
+    "repository": "https://github.com/TeamEspro/EsproUserBot",
     "env": {
         "API_ID": {
             "description": "Enter your api id here.",

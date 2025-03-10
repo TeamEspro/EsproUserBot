@@ -1,5 +1,5 @@
 <p align="center">
-<a href="https://github.com/AdityaHalder/crowgram"><img src="crowgram/assets/crowgram.png" height="128" width="128" alt="Crowgram"/></a>
+<a href="https://github.com/TeamEspro/EsproUserBot"><img src="crowgram/assets/crowgram.png" height="128" width="128" alt="Crowgram"/></a>
 </p>
 
 <p align="center">
@@ -8,7 +8,7 @@ Crowgram is a powerful, advanced, multi-featured Telegram userbot.
 </p>
 
 <p align="center">
-<a href="https://heroku.com/deploy?template=https://github.com/AdityaHalder/Crowgram">
+<a href="https://heroku.com/deploy?template=https://github.com/TeamEspro/EsproUserBot">
 <img src="crowgram/assets/deploytoheroku.svg" alt="Deploy to Heroku"></a>
 </p>
 
