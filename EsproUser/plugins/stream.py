@@ -5,9 +5,7 @@ from EsproUser import add_to_queue
 from EsproUser import download_media_file
 from EsproUser import get_media_info, get_media_stream
 from pyrogram import filters
-from pytgcalls.exceptions import AlreadyJoinedError, GroupCallNotFound
-from pytgcalls.exceptions import NoActiveGroupCall, TelegramServerError
-
+from pytgcalls.exceptions import AlreadyJoinedError, GroupCallNotFound, NoActiveGroupCall  # Fixed Import
 
 @app.on_message(cdz(["ply", "play", "vply", "vplay"]) & ~filters.private)
 async def start_stream(client, message):
@@ -21,6 +19,7 @@ async def start_stream(client, message):
     audiostream = ((replied.audio or replied.voice) if replied else None)
     videostream = ((replied.video or replied.document) if replied else None)
     command = str(message.command[0][0])
+    
     if audiostream:
         media = await client.download_media(replied)
         type = "Audio"
@@ -29,9 +28,7 @@ async def start_stream(client, message):
         type = "Video"
     else:
         if len(message.command) < 2:
-            return await aux.edit(
-                "**🥀 Give Me Some Query To\nStream Audio Or Video❗...**"
-            )
+            return await aux.edit("**🥀 Give Me Some Query To\nStream Audio Or Video❗...**")
         query = message.text.split(None, 1)[1]
         if "https://" in query:
             base = r"(?:https?:)?(?:\/\/)?(?:www\.)?(?:youtu\.be\/|youtube(?:\-nocookie)?\.(?:[A-Za-z]{2,4}|[A-Za-z]{2,3}\.[A-Za-z]{2})\/)?(?:shorts\/|live\/)?(?:watch|embed\/|vi?\/)*(?:\?[\w=&]*vi?=)?([^#&\?\/]{11}).*$"
@@ -41,11 +38,9 @@ async def start_stream(client, message):
             vidid = None
         results = await get_media_info(vidid, query)
         link = str(results[1])
-        if command == "v":
-            type = "Video"
-        else:
-            type = "Audio"
+        type = "Video" if command == "v" else "Audio"
         media = await download_media_file(link, type)
+
     try:
         a = await call.get_call(chat_id)
         if a.status == "not_playing":
@@ -53,7 +48,7 @@ async def start_stream(client, message):
             await call.change_stream(chat_id, stream)
             await add_to_queue(chat_id, media=media, type=type)
             return await aux.edit("**Streaming Started ....**")
-        elif (a.status == "playing" or a.status == "paused"):
+        elif a.status in ["playing", "paused"]:
             position = await add_to_queue(chat_id, media=media, type=type)
             return await aux.edit(f"**Added to Queue At {position}**")
     except GroupCallNotFound:
@@ -66,10 +61,6 @@ async def start_stream(client, message):
             return await aux.edit("**No Active VC !**")
         except AlreadyJoinedError:
             return await aux.edit("**Assistant Already in VC !**")
-        except TelegramServerError:
-            return await aux.edit("**Telegram Server Error !**")
-        except Exception as e:
+        except Exception as e:  # Fixed Error Handling
             print(f"Error: {e}")
-            return await aux.edit("**Please Try Again !**")
-        except:
-            return
+            return await aux.edit(f"**Error: {str(e)}**")
