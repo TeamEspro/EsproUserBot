@@ -1,9 +1,9 @@
 import re
 
-from crowgram import app, call, cdz, eor
-from crowgram import add_to_queue
-from crowgram import download_media_file
-from crowgram import get_media_info, get_media_stream
+from EsproUser import app, call, cdz, eor
+from EsproUser import add_to_queue
+from EsproUser import download_media_file
+from EsproUser import get_media_info, get_media_stream
 from pyrogram import filters
 from pytgcalls.exceptions import AlreadyJoinedError, GroupCallNotFound
 from pytgcalls.exceptions import NoActiveGroupCall, TelegramServerError

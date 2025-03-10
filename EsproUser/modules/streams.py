@@ -1,6 +1,6 @@
 import asyncio, re, yt_dlp
 
-from crowgram import config
+from EsproUser import config
 from pyrogram.types import Audio, Voice
 from pyrogram.types import Video, VideoNote
 from pytgcalls.types import AudioQuality, VideoQuality
