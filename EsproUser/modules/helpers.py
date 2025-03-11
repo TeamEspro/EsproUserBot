@@ -1,48 +1,60 @@
-import asyncio
 import os
 import yt_dlp
 
-async def download_media_file(link: str, media_type: str):
-    loop = asyncio.get_running_loop()
+# Cookies file ka path
 COOKIES_FILE = "cookies.txt"
-    # Common yt-dlp Options
+
+def download_media_file(url, download_audio=False, output_dir="downloads"):
+    """
+    YouTube ya kisi bhi site se video/audio download karega cookies ke support ke saath.
+
+    Parameters:
+    - url (str): Video ka URL
+    - download_audio (bool): Agar True hai to sirf audio download hoga, warna video.
+    - output_dir (str): Downloaded file ka folder
+
+    Returns:
+    - str: Downloaded file ka path ya error message.
+    """
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Download options
     ydl_opts = {
-        "outtmpl": "downloads/%(id)s.%(ext)s",
+        "outtmpl": f"{output_dir}/%(title)s.%(ext)s",
         "geo_bypass": True,
         "nocheckcertificate": True,
-        "quiet": True,
+        "quiet": False,
         "no_warnings": True,
-        "cookiefile": COOKIES_FILE,  # Cookies Support Added
-        "http_headers": {  # Custom Headers
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept-Language": "en-US,en;q=0.9",
-        },
+        "cookiefile": COOKIES_FILE,  # Cookies ka support
     }
 
-    # Audio Download
-    if media_type.lower() == "audio":
+    # Audio mode agar True hai to
+    if download_audio:
         ydl_opts["format"] = "bestaudio/best"
+        ydl_opts["postprocessors"] = [
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "192",
+            }
+        ]
+    else:
+        ydl_opts["format"] = "bestvideo+bestaudio/best"
 
-    # Video Download
-    elif media_type.lower() == "video":
-        ydl_opts["format"] = "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])"
-
-    x = yt_dlp.YoutubeDL(ydl_opts)
-
+    # Download start
     try:
-        info = await loop.run_in_executor(None, lambda: x.extract_info(link, download=False))
-        file = os.path.join("downloads", f"{info['id']}.{info['ext']}")
-
-        if os.path.exists(file):
-            return file
-
-        await loop.run_in_executor(None, x.download, [link])
-        return file
-
-    except yt_dlp.utils.DownloadError as e:
-        print(f"Download Error: {e}")
-        return None
-
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url, download=True)
+            file_path = ydl.prepare_filename(info_dict)
+            return f"Downloaded: {file_path}"
     except Exception as e:
-        print(f"Unexpected Error: {e}")
-        return None
+        return f"Error: {str(e)}"
+
+# Example Usage:
+video_url = input("Enter the video URL: ")
+mode = input("Download Audio only? (yes/no): ").strip().lower()
+download_audio = mode == "yes"
+
+result = download_video_audio(video_url, download_audio)
+print(result)
