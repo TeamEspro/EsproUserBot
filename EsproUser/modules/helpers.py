@@ -2,10 +2,9 @@ import asyncio
 import os
 import yt_dlp
 
-COOKIES_FILE = "cookies.txt"
 async def download_media_file(link: str, media_type: str):
     loop = asyncio.get_running_loop()
-
+COOKIES_FILE = "cookies.txt"
     # Common yt-dlp Options
     ydl_opts = {
         "outtmpl": "downloads/%(id)s.%(ext)s",
