@@ -1,5 +1,4 @@
 import asyncio
-import re
 import yt_dlp
 
 from EsproUser import config
@@ -32,14 +31,16 @@ def get_video_name(video: Union[Video, VideoNote]):
     return file_name
 
 
-# 📌 Get YouTube Video Details
+# 📌 Get YouTube Video Details (Fixed next() issue)
 async def get_media_info(vidid: str, query: str):
     url = f"https://www.youtube.com/watch?v={vidid}" if vidid else None
     search = url if url else query
-    results = await VideosSearch(search, limit=1).get()
     
-    if results["result"]:
-        result = results["result"][0]
+    results = VideosSearch(search, limit=1)  # Object create karo
+    search_results = await results.next()  # next() method async call karo
+    
+    if search_results["result"]:
+        result = search_results["result"][0]
         videoid = vidid if vidid else result["id"]
         videourl = url if url else result["link"]
         return [videoid, videourl]
