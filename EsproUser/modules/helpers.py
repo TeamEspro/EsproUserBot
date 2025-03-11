@@ -1,50 +1,59 @@
 import asyncio
 import os
-import ssl
 import yt_dlp
-import certifi
 
-# ✅ SSL FIX: Set correct SSL certificate file
-ssl._create_default_https_context = ssl._create_unverified_context  # Temporary fix
-os.environ["SSL_CERT_FILE"] = certifi.where()
+COOKIES_FILE = "cookies.txt"  # Cookies ka file path
 
 async def download_media_file(link: str, media_type: str):
-    """YouTube se video/audio download karta hai cookies aur SSL fix ke saath."""
+    """YouTube se Audio ya Video download karega, cookies ke saath."""
     
     loop = asyncio.get_running_loop()
-    cookies_path = "cookies.txt"  # Ensure yeh file exist karti hai
-    
-    # ✅ yt-dlp options (SSL Fix + Cookies)
+
+    # Check agar valid media type hai
+    if media_type not in ["Audio", "Video"]:
+        raise ValueError("Invalid media type! Use 'Audio' or 'Video'.")
+
+    # Download options
     ydl_opts = {
-        "format": "bestaudio/best" if media_type == "Audio" else "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
-        "outtmpl": "downloads/%(title)s.%(ext)s",
+        "format": "bestaudio/best" if media_type == "Audio" else "(bestvideo[height<=?720][ext=mp4])+bestaudio[ext=m4a]",
+        "outtmpl": "downloads/%(id)s.%(ext)s",
         "geo_bypass": True,
-        "nocheckcertificate": True,  # ✅ SSL Verify Bypass
+        "nocheckcertificate": True,
         "quiet": True,
         "no_warnings": True,
-        "cookiefile": cookies_path,  # ✅ YouTube Authentication
+        "cookies": COOKIES_FILE,  # Cookies use karega
     }
 
-    x = yt_dlp.YoutubeDL(ydl_opts)
-    
-    try:
-        # ✅ Extract info without downloading (to get correct filename)
-        info = x.extract_info(link, download=False)
+    # Function to extract info
+    def extract_info():
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            return ydl.extract_info(link, False)
 
-        if "id" not in info or "ext" not in info:
-            return None  # Invalid URL ya format
+    info = await loop.run_in_executor(None, extract_info)
 
-        file_path = x.prepare_filename(info)
+    if not info:
+        raise Exception("Failed to fetch video details!")
 
-        # ✅ Check if file already exists
-        if os.path.exists(file_path):
-            return file_path
+    file_path = os.path.join("downloads", f"{info.get('id', 'unknown')}.{info.get('ext', 'mp4')}")
 
-        # ✅ Async download
-        await loop.run_in_executor(None, x.download, [link])
-
+    # Agar file already exist karti hai
+    if os.path.exists(file_path):
         return file_path
 
-    except yt_dlp.utils.DownloadError as e:
-        print(f"Download Error: {e}")
-        return None
+    # Function to download
+    def download():
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([link])
+
+    await loop.run_in_executor(None, download)
+
+    return file_path
+
+# Example Usage
+async def main():
+    url = "https://www.youtube.com/watch?v=VIDEO_ID"  # Replace with actual YouTube link
+    file_path = await download_media_file(url, "Audio")  # Audio ya Video choose karo
+    print(f"Downloaded file: {file_path}")
+
+# Run the async function
+asyncio.run(main())
