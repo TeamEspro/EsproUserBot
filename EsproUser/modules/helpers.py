@@ -1,41 +1,34 @@
-import httpx
-import asyncio
-import json
-import random
-import time
+import asyncio, os, yt_dlp
 
-class RequestCore:
-    def __init__(self, timeout: int = 10, retries: int = 3, proxy=None):
-        self.timeout = timeout
-        self.retries = retries
-        self.proxy = proxy  # Proxy ka support hata diya gaya hai
 
-    async def asyncPostRequest(self, url: str, data: dict, headers: dict = {}):
-        """POST request using httpx.AsyncClient without 'proxies' parameter"""
-        async with httpx.AsyncClient() as client:  # << PROXY ARGUMENT HATA DIYA
-            for attempt in range(self.retries):
-                try:
-                    response = await client.post(url, json=data, headers=headers, timeout=self.timeout)
-                    if response.status_code == 200:
-                        return response.json()
-                except httpx.HTTPStatusError as e:
-                    print(f"HTTP error on attempt {attempt+1}: {e}")
-                except Exception as e:
-                    print(f"Request failed: {e}")
-                await asyncio.sleep(random.uniform(1, 3))
-        return None
+async def download_media_file(link: str, type: str):
+    loop = asyncio.get_running_loop()
+    if type == "Audio":
+        ydl_opts = {
+            "format": "bestaudio/best",
+            "outtmpl": "downloads/%(id)s.%(ext)s",
+            "geo_bypass": True,
+            "nocheckcertificate": True,
+            "quiet": True,
+            "no_warnings": True,
+        }
 
-    async def asyncGetRequest(self, url: str, headers: dict = {}):
-        """GET request using httpx.AsyncClient without 'proxies' parameter"""
-        async with httpx.AsyncClient() as client:  # << PROXY ARGUMENT HATA DIYA
-            for attempt in range(self.retries):
-                try:
-                    response = await client.get(url, headers=headers, timeout=self.timeout)
-                    if response.status_code == 200:
-                        return response.json()
-                except httpx.HTTPStatusError as e:
-                    print(f"HTTP error on attempt {attempt+1}: {e}")
-                except Exception as e:
-                    print(f"Request failed: {e}")
-                await asyncio.sleep(random.uniform(1, 3))
-        return None
+    elif type == "Video":
+        ydl_opts = {
+            "format": "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
+            "outtmpl": "downloads/%(id)s.%(ext)s",
+            "geo_bypass": True,
+            "nocheckcertificate": True,
+            "quiet": True,
+            "no_warnings": True,
+        }
+        
+    x = yt_dlp.YoutubeDL(ydl_opts)
+    info = x.extract_info(link, False)
+    file = os.path.join(
+        "downloads", f"{info['id']}.{info['ext']}"
+    )
+    if os.path.exists(file):
+        return file
+    await loop.run_in_executor(None, x.download, [link])
+    return file
