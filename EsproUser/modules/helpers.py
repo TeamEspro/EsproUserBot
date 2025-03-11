@@ -1,10 +1,9 @@
-import asyncio, os, yt_dlp, ssl
-
-# Disable SSL verification (Temporary fix)
-ssl._create_default_https_context = ssl._create_unverified_context
+import asyncio, os, yt_dlp
 
 async def download_media_file(link: str, type: str):
     loop = asyncio.get_running_loop()
+
+    cookies_path = "cookies.txt"  # Ensure this file exists in the same directory
     
     if type == "Audio":
         ydl_opts = {
@@ -14,6 +13,7 @@ async def download_media_file(link: str, type: str):
             "nocheckcertificate": True,
             "quiet": True,
             "no_warnings": True,
+            "cookiefile": cookies_path  # Using cookies for authentication
         }
 
     elif type == "Video":
@@ -24,10 +24,12 @@ async def download_media_file(link: str, type: str):
             "nocheckcertificate": True,
             "quiet": True,
             "no_warnings": True,
+            "cookiefile": cookies_path  # Using cookies for authentication
         }
-    
+
     x = yt_dlp.YoutubeDL(ydl_opts)
     
+    # Fetch video info
     info = x.extract_info(link, download=False)
     if "id" not in info or "ext" not in info:
         return None  
