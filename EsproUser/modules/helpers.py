@@ -51,7 +51,7 @@ async def download_media_file(link: str, media_type: str):
 
 # Example Usage
 async def main():
-    url = "https://www.youtube.com/watch?v=VIDEO_ID"  # Replace with actual YouTube link
+    url = "https://www.youtube.com/watch?v="  # Replace with actual YouTube link
     file_path = await download_media_file(url, "Audio")  # Audio ya Video choose karo
     print(f"Downloaded file: {file_path}")
 
