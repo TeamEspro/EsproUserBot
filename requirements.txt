@@ -8,3 +8,4 @@ python-dotenv==1.0.0
 tgcrypto==1.2.5
 youtube-search-python
 yt-dlp==2023.12.30
+certifi
