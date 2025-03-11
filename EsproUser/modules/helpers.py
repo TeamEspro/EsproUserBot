@@ -3,6 +3,8 @@ import os
 import yt_dlp
 
 
+COOKIES_FILE = "cookies.txt"  # Change path as needed
+
 async def download_media_file(link: str, media_type: str):
     loop = asyncio.get_running_loop()
     
