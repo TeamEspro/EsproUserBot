@@ -1,44 +1,50 @@
-import asyncio, os, yt_dlp
+import asyncio
+import os
+import ssl
+import yt_dlp
+import certifi
 
-async def download_media_file(link: str, type: str):
-    loop = asyncio.get_running_loop()
+# ✅ SSL FIX: Set correct SSL certificate file
+ssl._create_default_https_context = ssl._create_unverified_context  # Temporary fix
+os.environ["SSL_CERT_FILE"] = certifi.where()
 
-    cookies_path = "cookies.txt"  # Ensure this file exists in the same directory
+async def download_media_file(link: str, media_type: str):
+    """YouTube se video/audio download karta hai cookies aur SSL fix ke saath."""
     
-    if type == "Audio":
-        ydl_opts = {
-            "format": "bestaudio/best",
-            "outtmpl": "downloads/%(title)s.%(ext)s",
-            "geo_bypass": True,
-            "nocheckcertificate": True,
-            "quiet": True,
-            "no_warnings": True,
-            "cookiefile": cookies_path  # Using cookies for authentication
-        }
-
-    elif type == "Video":
-        ydl_opts = {
-            "format": "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
-            "outtmpl": "downloads/%(title)s.%(ext)s",
-            "geo_bypass": True,
-            "nocheckcertificate": True,
-            "quiet": True,
-            "no_warnings": True,
-            "cookiefile": cookies_path  # Using cookies for authentication
-        }
+    loop = asyncio.get_running_loop()
+    cookies_path = "cookies.txt"  # Ensure yeh file exist karti hai
+    
+    # ✅ yt-dlp options (SSL Fix + Cookies)
+    ydl_opts = {
+        "format": "bestaudio/best" if media_type == "Audio" else "(bestvideo[height<=?720][width<=?1280][ext=mp4])+(bestaudio[ext=m4a])",
+        "outtmpl": "downloads/%(title)s.%(ext)s",
+        "geo_bypass": True,
+        "nocheckcertificate": True,  # ✅ SSL Verify Bypass
+        "quiet": True,
+        "no_warnings": True,
+        "cookiefile": cookies_path,  # ✅ YouTube Authentication
+    }
 
     x = yt_dlp.YoutubeDL(ydl_opts)
     
-    # Fetch video info
-    info = x.extract_info(link, download=False)
-    if "id" not in info or "ext" not in info:
-        return None  
+    try:
+        # ✅ Extract info without downloading (to get correct filename)
+        info = x.extract_info(link, download=False)
 
-    file_path = x.prepare_filename(info)
+        if "id" not in info or "ext" not in info:
+            return None  # Invalid URL ya format
 
-    if os.path.exists(file_path):
+        file_path = x.prepare_filename(info)
+
+        # ✅ Check if file already exists
+        if os.path.exists(file_path):
+            return file_path
+
+        # ✅ Async download
+        await loop.run_in_executor(None, x.download, [link])
+
         return file_path
 
-    await loop.run_in_executor(None, x.download, [link])
-    
-    return file_path
+    except yt_dlp.utils.DownloadError as e:
+        print(f"Download Error: {e}")
+        return None
